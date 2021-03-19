@@ -1,5 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+import fs from 'fs';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
 
 (async () => {
@@ -12,6 +13,17 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
 
   // Use the body parser middleware for post requests
   app.use(bodyParser.json());
+
+  app.use(function(req, res,next){
+    res.on('finish', function(){
+      fs.readdir("./src/util/tmp/", (err, files) => {
+        if (err) throw err;
+        console.log(files);
+        deleteLocalFiles (files);
+      });
+    });
+    next();
+});
 
   // @TODO1 IMPLEMENT A RESTFUL ENDPOINT
   // GET /filteredimage?image_url={{URL}}
@@ -42,8 +54,8 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
     }else{
       //use the url to filter
       try{
-        let x = await filterImageFromURL(req.query.image_url);
-        res.sendFile(x);
+        let path = await filterImageFromURL(req.query.image_url);
+        await res.sendFile(path);
       }catch(e){
         res.send("Opps There is an Error");
       }
