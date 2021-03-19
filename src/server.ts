@@ -18,7 +18,6 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
     res.on('finish', function(){
       fs.readdir("./src/util/tmp/", (err, files) => {
         if (err) throw err;
-        console.log(files);
         deleteLocalFiles (files);
       });
     });
@@ -50,14 +49,14 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
 
     //validate if the image_url is sent from the first place
     if(req.query.image_url == undefined){
-      res.send({message:"Ooops! Please send an image_url"});
+      res.status(400).send({message:"Ooops! Please send an image_url"});
     }else{
       //use the url to filter
       try{
         let path = await filterImageFromURL(req.query.image_url);
         await res.sendFile(path);
       }catch(e){
-        res.send("Opps There is an Error");
+        res.status(500).send("Opps There is an Error");
       }
     }
 
